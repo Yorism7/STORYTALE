@@ -1,0 +1,61 @@
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.env
+!*.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+build/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backend local data (SQLite when not using Docker)
+backend/data/
+
+# Node / Web
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+web/dist/
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Mobile (Kivy / Buildozer)
+mobile/.buildozer/
+mobile/bin/
+mobile/*.apk
+mobile/*.aab
+*.spec
+
+# Logs & temp
+*.log
+tmp/
+temp/
+.cache/

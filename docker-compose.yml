@@ -1,0 +1,26 @@
+# เปิดแอปที่ http://localhost เท่านั้น (เว็บ proxy /api ไปที่ backend ให้แล้ว)
+services:
+  backend:
+    build: ./backend
+    env_file:
+      - backend/.env
+    environment:
+      - STORYTELL_DB_DIR=/data
+    volumes:
+      - storytell_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  web:
+    build: ./web
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  storytell_data:
