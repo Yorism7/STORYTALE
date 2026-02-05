@@ -36,13 +36,20 @@ async def generate_story_json(topic: str, num_episodes: int, story_lang: str = "
         else 'Write the story title and ALL episode "text" in English.'
     )
     system = f"""You are a children's story writer for ages 3–8. Create a short, wholesome story with exactly {num_episodes} episodes (chapters).
+
+CRITICAL – Consistent look in every illustration (same characters + same art style):
+- Add "characterDescription": one short English phrase for the main characters' appearance so they look THE SAME in every picture (e.g. "a small brown rabbit with white belly and pink ears, a green turtle with round shell and friendly smile").
+- Add "artStyle": one short English phrase for the VISUAL STYLE of all illustrations, so every image looks like the same book. Be specific: technique, colors, mood (e.g. "soft watercolor painting, pastel colors, rounded shapes, warm lighting, gentle shadows" or "flat cartoon style, bright colors, clean lines, friendly and cheerful"). This will be applied to every episode image.
+- Each episode "imagePrompt" = only the SCENE or action for that moment (where they are, what they do). Do NOT repeat character looks or art style in each imagePrompt.
+
 Rules:
 - {lang_rule}
 - Each episode: "text" = 2–4 short sentences, simple words, positive message.
-- Each episode: "imagePrompt" = one English phrase for a single illustration: friendly characters, soft colors, children's book style (e.g. "cute rabbit and turtle in a sunny forest, watercolor illustration, soft pastel colors, no text").
+- Each episode: "imagePrompt" = one English phrase for the scene/situation only, e.g. "in a sunny forest by a stream", "at the finish line cheering".
 - No violence, no fear; gentle and safe for kids.
+
 Output ONLY valid JSON, no markdown or extra text:
-{{"title": "Story title", "episodes": [{{"text": "...", "imagePrompt": "..."}}, ...]}}"""
+{{"title": "Story title", "characterDescription": "short visual description of main characters", "artStyle": "short description of illustration style for the whole story", "episodes": [{{"text": "...", "imagePrompt": "..."}}, ...]}}"""
 
     user = f"Write a children's story about: {topic}. Use exactly {num_episodes} episodes."
 
@@ -75,7 +82,11 @@ Output ONLY valid JSON, no markdown or extra text:
     parsed = json.loads(content)
     if "title" not in parsed or "episodes" not in parsed:
         raise ValueError("Invalid story JSON: missing title or episodes")
-    print(f"[StoryTale] Generated story title: {parsed.get('title')}, episodes: {len(parsed.get('episodes', []))}")
+    if "characterDescription" not in parsed or not str(parsed.get("characterDescription", "")).strip():
+        parsed["characterDescription"] = ""
+    if "artStyle" not in parsed or not str(parsed.get("artStyle", "")).strip():
+        parsed["artStyle"] = ""
+    print(f"[StoryTale] Generated story title: {parsed.get('title')}, episodes: {len(parsed.get('episodes', []))}, characterDescription: {'yes' if parsed.get('characterDescription') else 'no'}, artStyle: {'yes' if parsed.get('artStyle') else 'no'}")
     return parsed
 
 
@@ -85,11 +96,17 @@ async def generate_image(
     height: int = 1024,
     style_suffix: str | None = None,
     model: str = IMAGE_MODEL_DEFAULT,
+    character_description: str | None = None,
+    art_style: str | None = None,
 ) -> bytes:
-    """Generate one image from prompt; returns image bytes (JPEG). model: flux | zimage."""
-    # Child-friendly style: soft, illustration; optional style from user
+    """Generate one image from prompt; returns image bytes (JPEG). model: flux | zimage.
+    character_description: ตัวละครคงที่ทุกภาพ | art_style: แนวภาพคงที่ทุกภาพ."""
+    # ตัวละครคงที่
+    base = (character_description.strip() + ". ") if character_description and character_description.strip() else ""
+    # แนวภาพคงที่ทั้งเรื่อง (ถ้ามี) ไม่ก็ใช้ค่าเริ่มต้น
+    style_part = (art_style.strip() + ", ") if art_style and art_style.strip() else "children's book illustration, soft colors, cartoon style, "
     style_extra = f", {style_suffix}" if style_suffix else ""
-    safe_prompt = f"{prompt}, children's book illustration, soft colors, cartoon style{style_extra}, friendly, safe for kids, no violence, no dark themes"
+    safe_prompt = f"{base}{prompt}, {style_part}same visual style and character design in every scene{style_extra}, friendly, safe for kids, no violence, no dark themes"
     encoded = urllib.parse.quote(safe_prompt)
     url = f"{IMAGE_BASE}/{encoded}"
     params = _image_params(prompt, width, height, model=model)

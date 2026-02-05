@@ -26,7 +26,12 @@ class StoryService:
         title = story_data["title"]
         episodes_data = story_data["episodes"][:num_episodes]
         model = image_model if image_model in ("flux", "zimage") else "flux"
-        print(f"[StoryTale] Image model: {model}")
+        character_description = (story_data.get("characterDescription") or "").strip()
+        art_style = (story_data.get("artStyle") or "").strip()
+        if character_description or art_style:
+            print(f"[StoryTale] Image model: {model}, consistent: characters={bool(character_description)}, artStyle={bool(art_style)}")
+        else:
+            print(f"[StoryTale] Image model: {model}")
 
         episodes_out: list[EpisodeOut] = []
         episodes_for_db: list[tuple[str, str, Optional[str]]] = []
@@ -35,7 +40,13 @@ class StoryService:
             text = ep.get("text", "")
             image_prompt = ep.get("imagePrompt", "children's book illustration")
             try:
-                img_bytes = await generate_image(image_prompt, style_suffix=image_style, model=model)
+                img_bytes = await generate_image(
+                    image_prompt,
+                    style_suffix=image_style,
+                    model=model,
+                    character_description=character_description or None,
+                    art_style=art_style or None,
+                )
                 # Return as data URL so frontend can display without extra storage
                 b64 = base64.b64encode(img_bytes).decode("ascii")
                 image_url = f"data:image/jpeg;base64,{b64}"
