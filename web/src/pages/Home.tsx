@@ -85,8 +85,8 @@ export default function Home() {
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6 bg-home-hero relative z-10">
       <header className="text-center mb-6 sm:mb-8 animate-fade-in-up">
-        <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/90 shadow-lg shadow-primary/25 border border-primary/20 mb-4 animate-float overflow-hidden">
-          <img src="/logo.png" alt="" className="w-full h-full object-contain" width="96" height="96" />
+        <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 mb-4 animate-float">
+          <img src="/logo.png" alt="" className="w-full h-full object-contain drop-shadow-lg" width="120" height="120" />
         </div>
         <h1 className="text-3xl sm:text-5xl font-bold text-text mb-2 tracking-tight">
           {t('appTitle')}

@@ -1,5 +1,6 @@
 """Pollinations API client: chat completions (story JSON) + image generation."""
 import json
+import random
 import urllib.parse
 from typing import Any
 
@@ -51,7 +52,16 @@ Rules:
 Output ONLY valid JSON, no markdown or extra text:
 {{"title": "Story title", "characterDescription": "short visual description of main characters", "artStyle": "short description of illustration style for the whole story", "episodes": [{{"text": "...", "imagePrompt": "..."}}, ...]}}"""
 
-    user = f"Write a children's story about: {topic}. Use exactly {num_episodes} episodes."
+    seed = random.randint(1, 999_999)
+    variation_hints = [
+        "Create a unique, surprising version—avoid the most obvious plot.",
+        "Tell a fresh take on this theme; surprise the reader with an unexpected twist or setting.",
+        "Invent a different angle or character focus so this story feels new.",
+        "Use an unusual setting or situation for this topic.",
+        "Make the moral or journey different from the typical story for this theme.",
+    ]
+    hint = random.choice(variation_hints)
+    user = f"Write a children's story about: {topic}. Use exactly {num_episodes} episodes. [Variation seed: {seed}] {hint}"
 
     payload = {
         "model": CHAT_MODEL,
@@ -59,7 +69,7 @@ Output ONLY valid JSON, no markdown or extra text:
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
-        "temperature": 0.7,
+        "temperature": random.uniform(0.75, 0.92),
     }
     # Pollinations: ใช้ ?key= อย่างเดียว (ถ้าส่ง Bearer ด้วยบางครั้งได้ 401)
     url = CHAT_URL
