@@ -100,13 +100,20 @@ async def generate_image(
     art_style: str | None = None,
 ) -> bytes:
     """Generate one image from prompt; returns image bytes (JPEG). model: flux | zimage.
-    character_description: ตัวละครคงที่ทุกภาพ | art_style: แนวภาพคงที่ทุกภาพ."""
-    # ตัวละครคงที่
+    character_description: ตัวละครคงที่ทุกภาพ | art_style: แนวภาพจาก LLM (ใช้เมื่อไม่มี style_suffix).
+    style_suffix: สไตล์ที่ผู้ใช้เลือก – ใช้เป็นแนวหลักของทุกภาพให้เหมือนกันทั้งเรื่อง"""
+    # ตัวละครคงที่ทุกภาพ
     base = (character_description.strip() + ". ") if character_description and character_description.strip() else ""
-    # แนวภาพคงที่ทั้งเรื่อง (ถ้ามี) ไม่ก็ใช้ค่าเริ่มต้น
-    style_part = (art_style.strip() + ", ") if art_style and art_style.strip() else "children's book illustration, soft colors, cartoon style, "
-    style_extra = f", {style_suffix}" if style_suffix else ""
-    safe_prompt = f"{base}{prompt}, {style_part}same visual style and character design in every scene{style_extra}, friendly, safe for kids, no violence, no dark themes"
+    # สไตล์ภาพ: ถ้าผู้ใช้เลือกมาให้ใช้เป็นแนวหลักทั้งเรื่อง ไม่ก็ใช้ art_style จาก LLM หรือค่าเริ่มต้น
+    if style_suffix and style_suffix.strip():
+        style_part = (
+            f"{style_suffix.strip()}, same visual style and character design in every scene, "
+            "consistent throughout the story, "
+        )
+    else:
+        style_part = (art_style.strip() + ", ") if art_style and art_style.strip() else "children's book illustration, soft colors, cartoon style, "
+        style_part += "same visual style and character design in every scene, "
+    safe_prompt = f"{base}{prompt}, {style_part}friendly, safe for kids, no violence, no dark themes"
     encoded = urllib.parse.quote(safe_prompt)
     url = f"{IMAGE_BASE}/{encoded}"
     params = _image_params(prompt, width, height, model=model)

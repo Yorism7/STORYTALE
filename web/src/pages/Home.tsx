@@ -29,7 +29,7 @@ export default function Home() {
   const { t } = useLang()
   const [topic, setTopic] = useState('')
   const [numEpisodes, setNumEpisodes] = useState(5)
-  const [storyLang, setStoryLang] = useState<'en' | 'th'>('en')
+  const [storyLang, setStoryLang] = useState<'en' | 'th'>('th')
   const [imageModel, setImageModel] = useState<'flux' | 'zimage'>('flux')
   const [imageStyle, setImageStyle] = useState<string>('')
   const [loading, setLoading] = useState(false)
