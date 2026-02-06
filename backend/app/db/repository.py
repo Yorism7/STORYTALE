@@ -72,11 +72,13 @@ class StoryRepository:
         }
 
     def list_stories(self, limit: int = 20, offset: int = 0) -> list[dict]:
-        """Return list of { storyId, topic, title, num_episodes, created_at }."""
+        """Return list of { storyId, topic, title, num_episodes, created_at, first_episode_image_url }."""
         conn = sqlite3.connect(self._path)
         conn.row_factory = _row_factory
         cur = conn.execute(
-            "SELECT id, topic, title, num_episodes, created_at FROM stories ORDER BY created_at DESC LIMIT ? OFFSET ?",
+            """SELECT s.id, s.topic, s.title, s.num_episodes, s.created_at,
+                      (SELECT e.image_url FROM episodes e WHERE e.story_id = s.id ORDER BY e.ordinal LIMIT 1) AS first_episode_image_url
+               FROM stories s ORDER BY s.created_at DESC LIMIT ? OFFSET ?""",
             (limit, offset),
         )
         rows = cur.fetchall()
@@ -88,6 +90,7 @@ class StoryRepository:
                 "title": r["title"],
                 "num_episodes": r["num_episodes"],
                 "created_at": r["created_at"],
+                "first_episode_image_url": r.get("first_episode_image_url") or None,
             }
             for r in rows
         ]

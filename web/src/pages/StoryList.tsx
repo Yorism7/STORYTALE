@@ -50,13 +50,29 @@ export default function StoryList() {
             <li key={s.storyId}>
               <Link
                 to={`/story/${s.storyId}`}
-                className="block rounded-2xl bg-white/80 shadow-lg border border-primary/20 p-4 hover:shadow-xl hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 cursor-pointer"
+                className="block rounded-2xl bg-white/80 shadow-lg border border-primary/20 overflow-hidden hover:shadow-xl hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200 cursor-pointer"
               >
-                <h2 className="font-semibold text-text truncate">{s.title}</h2>
-                <p className="text-sm text-text/70 mt-1 truncate">{s.topic}</p>
-                <p className="text-xs text-text/50 mt-2">
-                  {s.num_episodes} {t('episodesCount')} · {formatDate(s.created_at)}
-                </p>
+                <div className="aspect-[4/3] w-full bg-primary/10 flex items-center justify-center shrink-0">
+                  {s.first_episode_image_url ? (
+                    <img
+                      src={s.first_episode_image_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="text-text/40 text-sm" aria-hidden="true">
+                      {t('noImage')}
+                    </span>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h2 className="font-semibold text-text truncate">{s.title}</h2>
+                  <p className="text-sm text-text/70 mt-1 truncate">{s.topic}</p>
+                  <p className="text-xs text-text/50 mt-2">
+                    {s.num_episodes} {t('episodesCount')} · {formatDate(s.created_at)}
+                  </p>
+                </div>
               </Link>
             </li>
           ))}

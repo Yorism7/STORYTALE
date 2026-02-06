@@ -14,6 +14,7 @@ const translations: Record<Locale, Record<string, string>> = {
     imageStyleLabel: 'Image style (optional)',
     selectOption: '— Select —',
     episodesLabel: 'Episodes (1–10)',
+    episodesRangeHint: 'Please choose between 1 and 10.',
     createStory: 'Create story',
     creating: 'Creating story...',
     viewSavedStories: 'View saved stories',
@@ -40,6 +41,7 @@ const translations: Record<Locale, Record<string, string>> = {
     storyLangLabel: 'Story language',
     storyLangEn: 'English',
     storyLangTh: 'ไทย',
+    skipToMain: 'Skip to main content',
   },
   th: {
     appTitle: 'StoryTale',
@@ -50,6 +52,7 @@ const translations: Record<Locale, Record<string, string>> = {
     imageStyleLabel: 'สไตล์ภาพ (ไม่บังคับ)',
     selectOption: '— เลือก —',
     episodesLabel: 'จำนวนตอน (1–10)',
+    episodesRangeHint: 'กรุณาเลือกระหว่าง 1–10',
     createStory: 'สร้างเรื่อง',
     creating: 'กำลังสร้างเรื่อง...',
     viewSavedStories: 'ดูรายการเรื่องที่เก็บไว้',
@@ -76,6 +79,7 @@ const translations: Record<Locale, Record<string, string>> = {
     storyLangLabel: 'ภาษาของเรื่อง',
     storyLangEn: 'English',
     storyLangTh: 'ไทย',
+    skipToMain: 'ข้ามไปเนื้อหาหลัก',
   },
 }
 
@@ -98,8 +102,17 @@ export function LangProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, locale)
   }, [locale])
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = locale
+    }
+  }, [locale])
+
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next)
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = next
+    }
   }, [])
 
   const t = useCallback(
@@ -125,11 +138,11 @@ export function useLang() {
 export function LangSwitcher() {
   const { locale, setLocale } = useLang()
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-primary/30 bg-white/60 p-0.5">
+    <div className="flex items-center gap-1 rounded-lg border border-primary/30 bg-white/60 p-1">
       <button
         type="button"
         onClick={() => setLocale('en')}
-        className={`rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
+        className={`rounded-md px-4 py-2.5 min-h-[44px] min-w-[44px] text-sm font-medium transition-colors flex items-center justify-center ${
           locale === 'en'
             ? 'bg-primary text-white'
             : 'text-text/70 hover:bg-primary/10 hover:text-text'
@@ -141,7 +154,7 @@ export function LangSwitcher() {
       <button
         type="button"
         onClick={() => setLocale('th')}
-        className={`rounded-md px-2.5 py-1 text-sm font-medium transition-colors ${
+        className={`rounded-md px-4 py-2.5 min-h-[44px] min-w-[44px] text-sm font-medium transition-colors flex items-center justify-center ${
           locale === 'th'
             ? 'bg-primary text-white'
             : 'text-text/70 hover:bg-primary/10 hover:text-text'

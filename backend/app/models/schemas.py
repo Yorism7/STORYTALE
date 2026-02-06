@@ -32,6 +32,7 @@ class StoryListItem(BaseModel):
     title: str
     num_episodes: int
     created_at: str
+    first_episode_image_url: str | None = None
 
 
 class GetStoryResponse(BaseModel):

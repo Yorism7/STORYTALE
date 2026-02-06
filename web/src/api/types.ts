@@ -26,6 +26,7 @@ export interface StoryListItem {
   title: string
   num_episodes: number
   created_at: string
+  first_episode_image_url?: string | null
 }
 
 export interface GetStoryResponse {
