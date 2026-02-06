@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Link } from 'react-router-dom'
 import { LangSwitcher, useLang } from './context/LangContext'
 import Home from './pages/Home'
 import StoryView from './pages/StoryView'
@@ -20,7 +20,10 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <SkipToMain />
-      <header className="flex justify-end items-center p-2 sm:p-3 border-b border-primary/10 bg-white/50 shrink-0">
+      <header className="flex justify-between items-center p-2 sm:p-3 border-b border-primary/10 bg-white/50 shrink-0">
+        <Link to="/" className="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg">
+          <img src="/logo.png" alt="" className="h-8 w-8 sm:h-9 sm:w-9 object-contain" width="36" height="36" />
+        </Link>
         <LangSwitcher />
       </header>
       <main id="main-content" className="flex-1" tabIndex={-1}>

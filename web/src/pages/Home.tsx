@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useLang } from '../context/LangContext'
 import { generateStory } from '../api/client'
 import {
-  IconBookOpen,
   IconTopic,
   IconLanguage,
   IconImage,
@@ -86,8 +85,8 @@ export default function Home() {
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-4 sm:p-6 bg-home-hero relative z-10">
       <header className="text-center mb-6 sm:mb-8 animate-fade-in-up">
-        <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/90 shadow-lg shadow-primary/25 border border-primary/20 mb-4 animate-float text-primary">
-          <IconBookOpen size={48} className="w-full h-full max-w-[3.5rem] max-h-[3.5rem] sm:max-w-[4.5rem] sm:max-h-[4.5rem]" />
+        <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/90 shadow-lg shadow-primary/25 border border-primary/20 mb-4 animate-float overflow-hidden">
+          <img src="/logo.png" alt="" className="w-full h-full object-contain" width="96" height="96" />
         </div>
         <h1 className="text-3xl sm:text-5xl font-bold text-text mb-2 tracking-tight">
           {t('appTitle')}
