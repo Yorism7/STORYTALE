@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useLang } from '../context/LangContext'
 import { generateStory } from '../api/client'
@@ -33,7 +33,26 @@ export default function Home() {
   const [imageModel, setImageModel] = useState<'flux' | 'zimage'>('flux')
   const [imageStyle, setImageStyle] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState(0)
   const [error, setError] = useState('')
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (!loading) return
+    setProgress(0)
+    progressIntervalRef.current = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 85) return p
+        return p + Math.random() * 4 + 2
+      })
+    }, 800)
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
+    }
+  }, [loading])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,7 +73,13 @@ export default function Home() {
       setError(err instanceof Error ? err.message : t('errorGeneric'))
       console.error('[StoryTale] generate error:', err)
     } finally {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+        progressIntervalRef.current = null
+      }
+      setProgress(100)
       setLoading(false)
+      setTimeout(() => setProgress(0), 400)
     }
   }
 
@@ -171,6 +196,21 @@ export default function Home() {
           <p className="mt-4 text-red-600 text-sm" role="alert">
             {error}
           </p>
+        )}
+
+        {loading && (
+          <div className="mt-6 space-y-2" role="status" aria-live="polite" aria-label={t('creating')}>
+            <div className="flex justify-between text-sm">
+              <span className="font-medium text-text">{t('creating')}</span>
+              <span className="font-semibold text-primary tabular-nums">{Math.min(100, Math.round(progress))}%</span>
+            </div>
+            <div className="h-2.5 w-full rounded-full bg-primary/20 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+                style={{ width: `${Math.min(100, progress)}%` }}
+              />
+            </div>
+          </div>
         )}
 
         <button
