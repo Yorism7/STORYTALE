@@ -11,6 +11,19 @@ import {
   IconLibrary,
 } from '../components/icons/HomeIcons'
 
+const IMAGE_STYLE_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: 'cartoon style', labelKey: 'imageStyleCartoon' },
+  { value: 'watercolor painting', labelKey: 'imageStyleWatercolor' },
+  { value: 'retro vintage', labelKey: 'imageStyleRetro' },
+  { value: '3d render, cute and child-friendly', labelKey: 'imageStyle3d' },
+  { value: 'cute kawaii style, child-friendly', labelKey: 'imageStyleKawaii' },
+  { value: 'children\'s storybook illustration', labelKey: 'imageStyleStorybook' },
+  { value: 'soft pastel illustration, gentle colors', labelKey: 'imageStylePastel' },
+  { value: 'disney pixar style, family-friendly', labelKey: 'imageStyleDisney' },
+  { value: 'claymation style, soft 3d', labelKey: 'imageStyleClay' },
+  { value: 'colorful cartoon, bright and friendly', labelKey: 'imageStyleColorful' },
+]
+
 export default function Home() {
   const navigate = useNavigate()
   const { t } = useLang()
@@ -125,9 +138,11 @@ export default function Home() {
             disabled={loading}
           >
             <option value="">{t('selectOption')}</option>
-            <option value="cartoon style">การ์ตูน</option>
-            <option value="watercolor painting">วาดน้ำ</option>
-            <option value="retro vintage">เรโทร</option>
+            {IMAGE_STYLE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {t(opt.labelKey)}
+              </option>
+            ))}
           </select>
 
           <label htmlFor="numEpisodes" className="flex items-center gap-2 text-sm font-semibold text-text mt-4 mb-2">
