@@ -1,0 +1,17 @@
+# Build จาก root ใช้แค่ backend
+.git
+.gitignore
+.cursor
+*.md
+web
+mobile
+scripts
+docker-compose.yml
+backend/data
+backend/.env
+backend/__pycache__
+backend/*.egg-info
+*.pyc
+.venv
+venv
+node_modules
