@@ -17,7 +17,11 @@ export async function generateStory(
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.detail || res.statusText || 'สร้างเรื่องไม่สำเร็จ')
+    const msg = err.detail || res.statusText || 'สร้างเรื่องไม่สำเร็จ'
+    if (res.status === 502) {
+      throw new Error('เซิร์ฟเวอร์ใช้เวลานานเกินไป (แผนฟรีจำกัด ~30 วินาที) ลองลดจำนวนตอนหรือลองใหม่อีกครั้ง')
+    }
+    throw new Error(msg)
   }
   return res.json()
 }
