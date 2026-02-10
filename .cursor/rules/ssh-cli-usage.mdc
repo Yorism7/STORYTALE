@@ -1,0 +1,66 @@
+---
+description: ใช้ SSH CLI CURSOR extension เมื่อ user ขอให้รันคำสั่งบน remote/server
+alwaysApply: true
+---
+
+# SSH CLI CURSOR Extension – ใช้กับ Cursor Chat
+
+เมื่อ user ขอให้ **รันคำสั่งบน server / remote / host ผ่าน SSH** (เช่น "รัน ls บน prod", "รันคำสั่งบน server X") ให้ใช้ extension **SSH CLI CURSOR**
+
+## ลง extension ก็ใช้ได้เลย (ไม่ต้อง copy script)
+
+**วิธีที่ง่ายที่สุด – ใช้ได้กับทุกโปรเจกต์ที่เปิดอยู่ใน Cursor:**
+
+1. กด **Ctrl+Shift+P** (Mac: Cmd+Shift+P)
+2. พิมพ์ **SSH CLI CURSOR: Run command in terminal** แล้วกด Enter
+3. เลือก **host** จากรายการ
+4. พิมพ์**คำสั่ง** (เช่น `free -h`, `ls -la`) แล้วกด Enter
+5. ผลจะแสดงใน Terminal ที่ extension เปิดให้ (ไม่ต้องมี script ในโปรเจกต์)
+
+**สำหรับ AI:** ถ้ารัน command ได้ ให้ใช้  
+`executeCommand('sshCli.runCommandInTerminal', '<host>', '<command>')`  
+เช่น `executeCommand('sshCli.runCommandInTerminal', 'etixgo.com', 'free -h')`
+
+## วิธีที่ AI เรียกได้ (รัน script ใน Terminal)
+
+Extension จะ **สร้าง `scripts/ssh-cli-run.js` ใน workspace อัตโนมัติ** ตอนเปิดโปรเจกต์ (ถ้ายังไม่มี) ดังนั้น AI รันคำสั่งใน Terminal ได้เลย:
+
+```bash
+node scripts/ssh-cli-run.js <host> "<command>"
+```
+
+ตัวอย่าง: `node scripts/ssh-cli-run.js etixgo.com "free -h"`
+
+ผลจะแสดงใน output ของ terminal (extension อ่าน request จาก `.cursor/ssh-cli-request.json` → รันคำสั่งบน host → เขียนผลลง `.cursor/ssh-cli-output.txt`)
+
+- ไฟล์ output: `.cursor/ssh-cli-output.txt` (บรรทัดแรกเป็นวันเวลา + host + command)
+- Extension มีการโหลด request แบบโพลทุก 2 วินาทีเป็น fallback
+
+**เงื่อนไข:** ต้องเปิด workspace ใน Cursor และ extension SSH CLI CURSOR ติดตั้งอยู่
+
+## ถ้า user ไม่บอก host
+
+ถามว่าให้ใช้ host ไหน หรือแนะนำให้ user เปิด Panel ดูรายการ: กด Ctrl+Shift+P → **SSH CLI CURSOR: Open Panel** → Enter
+
+## Fallback: แนะนำขั้นตอนให้ user ทำเอง
+
+ถ้ารัน script ไม่ได้ (เช่น timeout, extension ไม่ active) ให้ตอบเป็นขั้นตอน:
+
+1. กด **Ctrl+Shift+P** (Mac: Cmd+Shift+P)
+2. พิมพ์ **SSH CLI CURSOR: Run Command** แล้วกด Enter
+3. เลือก **host** จากรายการ
+4. พิมพ์**คำสั่ง**แล้วกด Enter
+5. ดูผลที่ **Output** → channel **"SSH CLI CURSOR"**
+
+## Host
+
+Host ต้องมีใน SSH config (default: `~/.ssh/config` หรือ Settings → `sshCli.sshConfigPath`)
+
+## ใช้กับโปรเจคอื่น
+
+- **แค่ลง extension** แล้วเปิดโปรเจกต์นั้นใน Cursor → Extension จะสร้าง **rule นี้** (`.cursor/rules/ssh-cli-usage.mdc`) และ **script** (`scripts/ssh-cli-run.js`) ให้อัตโนมัติถ้ายังไม่มี
+- ใช้คำสั่ง **Run command in terminal** ตามด้านบน หรือให้ AI รัน `node scripts/ssh-cli-run.js <host> "<command>"` ได้จากทุกโปรเจกต์ที่ลง extension
+
+## เอกสารเพิ่ม
+
+[docs/CURSOR-AI-USAGE.md](docs/CURSOR-AI-USAGE.md)

@@ -15,12 +15,46 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.image import AsyncImage
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.spinner import Spinner
+from kivy.uix.gridlayout import GridLayout
 from kivy.network.urlrequest import UrlRequest
 from kivy.core.audio import SoundLoader
 import tempfile
 
 # Backend base URL – เปลี่ยนเป็น IP จริงเมื่อรันบนมือถือ
 API_BASE = os.environ.get("STORYTELL_API_BASE", "http://localhost:8000")
+
+# ค่าที่ส่งไป API (ให้ตรงกับเว็บ)
+STORY_LANG_VALUES = ["ไทย", "English"]
+STORY_LANG_MAP = {"ไทย": "th", "English": "en"}
+IMAGE_MODEL_VALUES = ["Flux Schnell", "Z-Image Turbo"]
+IMAGE_MODEL_MAP = {"Flux Schnell": "flux", "Z-Image Turbo": "zimage"}
+IMAGE_STYLE_LABELS = [
+    "— เลือก —",
+    "การ์ตูน",
+    "วาดน้ำ",
+    "เรโทร",
+    "สามมิติ (3D)",
+    "น่ารักคาวาอิ",
+    "ภาพนิทาน",
+    "พาสเทลนุ่ม",
+    "สไตล์ดิสนีย์/พิกซาร์",
+    "ปั้นดินน้ำมัน",
+    "การ์ตูนสีสัน",
+]
+IMAGE_STYLE_VALUES = [
+    "",
+    "cartoon style",
+    "watercolor painting",
+    "retro vintage",
+    "3d render, cute and child-friendly",
+    "cute kawaii style, child-friendly",
+    "children's storybook illustration",
+    "soft pastel illustration, gentle colors",
+    "disney pixar style, family-friendly",
+    "claymation style, soft 3d",
+    "colorful cartoon, bright and friendly",
+]
 
 
 Builder.load_string("""
@@ -63,6 +97,42 @@ Builder.load_string("""
             padding: 15, 15
             font_size: '16sp'
             background_color: 1, 1, 1, 0.6
+        Label:
+            text: 'ภาษาของเรื่อง'
+            font_size: '14sp'
+            color: text_color
+            size_hint_y: None
+            height: 28
+        Spinner:
+            id: story_lang
+            text: 'ไทย'
+            values: ['ไทย', 'English']
+            size_hint_y: None
+            height: 44
+        Label:
+            text: 'โมเดลภาพ'
+            font_size: '14sp'
+            color: text_color
+            size_hint_y: None
+            height: 28
+        Spinner:
+            id: image_model
+            text: 'Flux Schnell'
+            values: ['Flux Schnell', 'Z-Image Turbo']
+            size_hint_y: None
+            height: 44
+        Label:
+            text: 'สไตล์ภาพ (ไม่บังคับ)'
+            font_size: '14sp'
+            color: text_color
+            size_hint_y: None
+            height: 28
+        Spinner:
+            id: image_style
+            text: '— เลือก —'
+            values: ['— เลือก —', 'การ์ตูน', 'วาดน้ำ', 'เรโทร', 'สามมิติ (3D)', 'น่ารักคาวาอิ', 'ภาพนิทาน', 'พาสเทลนุ่ม', 'สไตล์ดิสนีย์/พิกซาร์', 'ปั้นดินน้ำมัน', 'การ์ตูนสีสัน']
+            size_hint_y: None
+            height: 44
         Label:
             text: 'จำนวนตอน (1-10)'
             font_size: '14sp'
@@ -212,9 +282,25 @@ class HomeScreen(Screen):
             num = max(1, min(10, num))
         except ValueError:
             num = 5
+        story_lang = STORY_LANG_MAP.get(self.ids.story_lang.text, "th")
+        image_model = IMAGE_MODEL_MAP.get(self.ids.image_model.text, "flux")
+        style_text = self.ids.image_style.text
+        image_style = None
+        if style_text and style_text != "— เลือก —":
+            idx = IMAGE_STYLE_LABELS.index(style_text) if style_text in IMAGE_STYLE_LABELS else -1
+            if idx >= 0 and idx < len(IMAGE_STYLE_VALUES):
+                image_style = IMAGE_STYLE_VALUES[idx] or None
         self.ids.status.text = "กำลังสร้างเรื่อง..."
         self.ids.btn_generate.disabled = True
-        body = json.dumps({"topic": topic, "num_episodes": num})
+        payload = {
+            "topic": topic,
+            "num_episodes": num,
+            "story_lang": story_lang,
+            "image_model": image_model,
+        }
+        if image_style:
+            payload["image_style"] = image_style
+        body = json.dumps(payload)
         url = f"{API_BASE}/api/story/generate"
         req = UrlRequest(
             url,
@@ -240,7 +326,11 @@ class HomeScreen(Screen):
     @mainthread
     def _on_failure(self, req, result):
         self.ids.btn_generate.disabled = False
-        self.ids.status.text = "สร้างไม่สำเร็จ (เช็ค backend)"
+        if isinstance(result, dict) and result.get("detail"):
+            detail = result["detail"]
+            self.ids.status.text = detail if isinstance(detail, str) else str(detail)
+        else:
+            self.ids.status.text = "สร้างไม่สำเร็จ (เช็ค backend หรือเครือข่าย)"
 
     @mainthread
     def _on_error(self, req, error):
@@ -264,6 +354,14 @@ class StoryListScreen(Screen):
             on_error=lambda req, err: None,
         )
 
+    def _format_date(self, iso_str):
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+            return dt.strftime("%d/%m/%y")
+        except Exception:
+            return iso_str[:10] if iso_str else ""
+
     @mainthread
     def _on_list_success(self, req, result):
         container = self.ids.list_container
@@ -272,17 +370,31 @@ class StoryListScreen(Screen):
             container.add_widget(Label(text="ยังไม่มีเรื่องที่เก็บไว้", font_size="16sp"))
             return
         for s in result:
+            row = BoxLayout(orientation="horizontal", size_hint_y=None, height=72, spacing=8, padding=(8, 4))
+            thumb_url = s.get("first_episode_image_url") or ""
+            if thumb_url:
+                img = AsyncImage(
+                    source=thumb_url,
+                    size_hint_x=None,
+                    width=56,
+                    allow_stretch=True,
+                    keep_ratio=True,
+                )
+                row.add_widget(img)
+            title = s.get("title", "") or "ไม่มีชื่อ"
+            meta = f"{s.get('num_episodes', 0)} ตอน · {self._format_date(s.get('created_at', ''))}"
             btn = Button(
-                text=f"{s.get('title', '')} ({s.get('num_episodes', 0)} ตอน)",
-                font_size="16sp",
+                text=f"{title}\n{meta}",
+                font_size="15sp",
                 size_hint_y=None,
-                height=56,
+                height=72,
                 background_color=(0.9, 0.9, 0.95, 1),
             )
             sid = s.get("storyId", "")
             btn.bind(on_press=lambda __, story_id=sid: self._open_story(story_id))
-            container.add_widget(btn)
-        container.height = len(result) * 66
+            row.add_widget(btn)
+            container.add_widget(row)
+        container.height = len(result) * 72 + max(0, len(result) - 1) * 10
 
     def _open_story(self, story_id):
         url = f"{API_BASE}/api/story/{story_id}"
