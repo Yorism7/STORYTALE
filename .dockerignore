@@ -1,9 +1,8 @@
-# Build จาก root ใช้แค่ backend
+# Build จาก root: backend + web (รวม deploy)
 .git
 .gitignore
 .cursor
 *.md
-web
 mobile
 scripts
 docker-compose.yml

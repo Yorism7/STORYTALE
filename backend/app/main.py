@@ -1,10 +1,11 @@
 """StoryTale FastAPI app."""
 import asyncio
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 
 from app.db import init_db, StoryRepository
 from app.models import (
@@ -40,6 +41,29 @@ app.add_middleware(
 
 repo = StoryRepository()
 story_service = StoryService(repo)
+
+# โฟลเดอร์ static (เว็บที่ build แล้ว) – ใน Docker อยู่ที่ /app/static
+STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+
+
+@app.get("/")
+def root():
+    """Root: serve หน้าเว็บ (index.html) ถ้ามี build แล้ว ไม่ก็คืน API info."""
+    index_html = STATIC_DIR / "index.html"
+    if index_html.is_file():
+        return FileResponse(index_html, media_type="text/html")
+    return {
+        "app": "StoryTale API",
+        "docs": "/docs",
+        "health": "/health",
+        "api": "/api/story/generate, /api/stories, /api/story/{id}, ...",
+    }
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """ไม่มี favicon → 204 No Content เพื่อไม่ให้เบราว์เซอร์ log 404."""
+    return Response(status_code=204)
 
 
 @app.get("/health")
@@ -103,3 +127,24 @@ async def export_video(body: ExportVideoRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="Export failed")
     return Response(content=mp4_bytes, media_type="video/mp4")
+
+
+@app.get("/{full_path:path}", include_in_schema=False)
+def serve_spa(full_path: str):
+    """Serve ไฟล์ static หรือ index.html สำหรับ SPA (รวม deploy ที่เดียว)."""
+    if full_path.startswith("api/"):
+        raise HTTPException(status_code=404, detail="Not found")
+    if not STATIC_DIR.is_dir():
+        raise HTTPException(status_code=404, detail="Not found")
+    file_path = (STATIC_DIR / full_path).resolve()
+    try:
+        if not file_path.is_relative_to(STATIC_DIR.resolve()):
+            raise HTTPException(status_code=404, detail="Not found")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Not found")
+    if file_path.is_file():
+        return FileResponse(file_path)
+    index_html = STATIC_DIR / "index.html"
+    if index_html.is_file():
+        return FileResponse(index_html, media_type="text/html")
+    raise HTTPException(status_code=404, detail="Not found")

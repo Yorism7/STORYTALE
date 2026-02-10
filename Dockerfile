@@ -1,5 +1,12 @@
-# สำหรับ Render.com (และ Docker จาก root ของ repo)
-# Build backend API เท่านั้น
+# Stage 1: Build frontend (Vite/React)
+FROM node:20-alpine AS web-builder
+WORKDIR /app/web
+COPY web/package.json web/package-lock.json* ./
+RUN npm ci || npm install
+COPY web/ .
+RUN npm run build
+
+# Stage 2: Backend + ไฟล์เว็บที่ build แล้ว
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -12,10 +19,10 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
+COPY --from=web-builder /app/web/dist ./static
 
 ENV STORYTELL_DB_DIR=/data
 VOLUME /data
 
 EXPOSE 8000
-# Render ส่ง PORT ผ่าน env ได้
 CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
