@@ -4,6 +4,8 @@
 
 **StoryTale** – แอปนิทานเด็กจาก AI: สร้างเรื่องจากหัวข้อ พร้อมภาพประกอบ เสียงอ่าน (Edge TTS) และส่งออกวิดีโอ
 
+[![Built with Pollinations](https://img.shields.io/badge/Built%20with-Pollinations-8a2be2?style=for-the-badge&logo=data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20124%20124%22%3E%3Ccircle%20cx%3D%2262%22%20cy%3D%2262%22%20r%3D%2262%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E&logoColor=white&labelColor=6a0dad)](https://pollinations.ai)
+
 ---
 
 ## Run with Docker (recommended)
@@ -16,6 +18,7 @@ docker compose up --build
 - Open **http://localhost** (port 80). Do not use `:8000` — the web server proxies `/api` to the backend.
 - SQLite data is stored in the `storytell_data` volume.
 - **API key:** Create `backend/.env` and set `POLLINATIONS_API_KEY=...` (get a key at [enter.pollinations.ai](https://enter.pollinations.ai)).
+- **AI:** Story text and images are generated via the [pollinations.ai](https://pollinations.ai) API.
 
 Stop: `docker compose down`
 

@@ -33,6 +33,32 @@ export default function App() {
           <Route path="/stories" element={<StoryList />} />
         </Routes>
       </main>
+      <SiteFooter />
     </div>
+  )
+}
+
+const POLLINATIONS_LOGO_URL = 'https://raw.githubusercontent.com/pollinations/pollinations/main/assets/logo-text.svg'
+
+function SiteFooter() {
+  const { t } = useLang()
+  return (
+    <footer className="shrink-0 border-t border-primary/10 bg-white/40 py-3 px-4 text-center text-sm text-text/70">
+      <a
+        href="https://pollinations.ai"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-2 text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+      >
+        <img
+          src={POLLINATIONS_LOGO_URL}
+          alt=""
+          className="h-5 w-auto opacity-80 invert"
+          width="108"
+          height="20"
+        />
+        <span>{t('poweredBy')}</span>
+      </a>
+    </footer>
   )
 }

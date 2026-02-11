@@ -52,6 +52,7 @@ const translations: Record<Locale, Record<string, string>> = {
     imageStyleDisney: 'Disney / Pixar style',
     imageStyleClay: 'Claymation',
     imageStyleColorful: 'Colorful cartoon',
+    poweredBy: 'Built with pollinations.ai',
   },
   th: {
     appTitle: 'StoryTale',
@@ -100,6 +101,7 @@ const translations: Record<Locale, Record<string, string>> = {
     imageStyleDisney: 'สไตล์ดิสนีย์/พิกซาร์',
     imageStyleClay: 'ปั้นดินน้ำมัน',
     imageStyleColorful: 'การ์ตูนสีสัน',
+    poweredBy: 'สร้างด้วย pollinations.ai',
   },
 }
 
